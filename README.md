@@ -1,6 +1,11 @@
-Credits: Ravelink is crafted with a vision to push Discord music frameworks beyond conventional limits. Proudly dedicated to Unknown xD and CodeWithRavager, this project carries forward their influence, ideas, and passion for building powerful systems. Their inspiration shapes Ravelink's foundation and its commitment to performance, stability, thoughtful developer experience, and long-term innovation for music bots worldwide.
-
 # Ravelink
+
+[![CI](https://github.com/ravelink-dev/ravelink/actions/workflows/ci.yml/badge.svg)](https://github.com/ravelink-dev/ravelink/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/ravelink.svg)](https://pypi.org/project/ravelink/)
+[![Python](https://img.shields.io/pypi/pyversions/ravelink.svg)](https://pypi.org/project/ravelink/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+Credits: Ravelink is crafted with a vision to push Discord music frameworks beyond conventional limits. Proudly dedicated to Unknown xD and CodeWithRavager, this project carries forward their influence, ideas, and passion for building powerful systems. Their inspiration shapes Ravelink's foundation and its commitment to performance, stability, thoughtful developer experience, and long-term innovation for music bots worldwide.
 
 Ravelink v1.0.0 is a production-focused Discord.py music framework for Lavalink. It provides node pooling, resilient player lifecycle management, typed track and playlist models, advanced queues, autoplay, filters, diagnostics, and reconnect-aware event handling for large Discord music bots.
 
