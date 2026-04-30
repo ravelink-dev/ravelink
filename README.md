@@ -1,6 +1,5 @@
 # Ravelink
-[![PyPI](https://img.shields.io/pypi/v/ravelink.svg)](https://pypi.org/project/ravelink/)
-[![Python](https://img.shields.io/pypi/pyversions/ravelink.svg)](https://pypi.org/project/ravelink/)
+
 [![CI](https://github.com/ravelink-dev/ravelink/actions/workflows/ci.yml/badge.svg)](https://github.com/ravelink-dev/ravelink/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
