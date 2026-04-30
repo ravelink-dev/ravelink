@@ -1,0 +1,57 @@
+# Credits: Ravelink is crafted with a vision to push Discord music frameworks beyond conventional limits. Proudly dedicated to Unknown xD and CodeWithRavager, this project carries forward their influence, ideas, and passion for building powerful systems. Their inspiration shapes Ravelink's foundation and its commitment to performance, stability, thoughtful developer experience, and long-term innovation for music bots worldwide.
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Ravelink"
+version = "1.0.0"
+description = "A production-focused Discord.py music framework for Lavalink."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Ravelink Contributors" }]
+keywords = ["discord", "discord.py", "lavalink", "music", "audio", "ravelink"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications :: Chat",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Typing :: Typed",
+]
+dependencies = [
+    "aiohttp>=3.9",
+    "discord.py>=2.3",
+    "typing-extensions>=4.8",
+    "yarl>=1.9",
+]
+
+[project.optional-dependencies]
+voice = ["PyNaCl>=1.6.2", "davey>=0.1.5"]
+speed = ["aiodns>=3.0", "Brotli>=1.1"]
+dev = ["ruff>=0.6", "mypy>=1.10", "PyNaCl>=1.6.2", "davey>=0.1.5"]
+
+[project.urls]
+Homepage = "https://github.com/ravelink-dev/ravelink"
+Issues = "https://github.com/ravelink-dev/ravelink/issues"
+Documentation = "https://github.com/ravelink-dev/ravelink#readme"
+
+[tool.setuptools]
+packages = ["ravelink", "ravelink.client", "ravelink.types"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+ravelink = ["py.typed"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
