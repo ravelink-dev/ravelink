@@ -131,13 +131,18 @@ class Client:
             return current
 
         selected = node or self.select_node(guild_id=guild.id, region=region)
+
+        class TargetedPlayer(self.player_cls):  # type: ignore[misc, valid-type]
+            def __init__(inner_self, *args: Any, **kwargs: Any) -> None:
+                kwargs["nodes"] = [selected]
+                super().__init__(*args, **kwargs)
+
         player = await channel.connect(
-            cls=self.player_cls,
+            cls=TargetedPlayer,
             timeout=timeout,
             reconnect=reconnect,
             self_deaf=self_deaf,
             self_mute=self_mute,
-            nodes=[selected],
         )
         self.players.register(player)
         return player
