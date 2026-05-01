@@ -960,15 +960,19 @@ class Pool:
         except Exception:
             pass
 
+        class TargetedPlayer(type(player)):  # type: ignore[misc, valid-type]
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
+                kwargs["nodes"] = [target]
+                super().__init__(*args, **kwargs)
+
         try:
             await asyncio.sleep(0.35)
             new_player: Player = await channel.connect(
-                cls=type(player),
+                cls=TargetedPlayer,
                 timeout=timeout,
                 reconnect=True,
                 self_deaf=self_deaf,
                 self_mute=self_mute,
-                nodes=[target],
             )
         except Exception as exc:
             return False, f"reconnect_failed:{exc}"
