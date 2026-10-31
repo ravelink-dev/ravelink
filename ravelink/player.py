@@ -1,5 +1,3 @@
-"""Credits: Ravelink is crafted with a vision to push Discord music frameworks beyond conventional limits. Proudly dedicated to Unknown xD and CodeWithRavager, this project carries forward their influence, ideas, and passion for building powerful systems. Their inspiration shapes Ravelink's foundation and its commitment to performance, stability, thoughtful developer experience, and long-term innovation for music bots worldwide."""
-
 from __future__ import annotations
 
 import asyncio
@@ -411,6 +409,75 @@ class Player(discord.VoiceProtocol):
             results.extend(chunk_results)
         return results
 
+    @staticmethod
+    def _autoplay_artist(track: Playable) -> str:
+        return (getattr(track, "author", "") or "").strip().lower()
+
+    @staticmethod
+    def _autoplay_title(track: Playable) -> str:
+        return (getattr(track, "title", "") or "").strip().lower()
+
+    def _rank_autoplay_candidates(
+        self,
+        results: list[list[Playable] | Exception],
+        *,
+        recent_tracks: list[Playable],
+        seed_tracks: list[Playable],
+    ) -> list[Playable]:
+        recent_artists = {artist for track in recent_tracks if (artist := self._autoplay_artist(track))}
+        recent_titles = {title for track in recent_tracks if (title := self._autoplay_title(track))}
+        seed_artists = {artist for track in seed_tracks if (artist := self._autoplay_artist(track))}
+        seed_titles = {title for track in seed_tracks if (title := self._autoplay_title(track))}
+
+        candidates: list[tuple[float, int, Playable]] = []
+        seen: set[str] = set()
+        for query_index, result in enumerate(results):
+            if isinstance(result, Exception):
+                continue
+            tracks = list(result)
+            random.shuffle(tracks)
+            for track_index, track in enumerate(tracks[:8]):
+                identity = self._autoplay_identity(track)
+                token = self._autoplay_dedupe_token(track)
+                unique_key = token or identity or getattr(track, "encoded", None) or f"{query_index}:{track_index}"
+                if unique_key in seen:
+                    continue
+                seen.add(unique_key)
+
+                artist = self._autoplay_artist(track)
+                title = self._autoplay_title(track)
+                score = random.random()
+                if artist and artist not in recent_artists:
+                    score += 4.0
+                if artist and artist in seed_artists:
+                    score += 1.5
+                if title and title not in recent_titles:
+                    score += 3.0
+                if title and title in seed_titles:
+                    score -= 5.0
+                if getattr(track, "recommended", False):
+                    score += 1.0
+                score -= min(query_index, 10) * 0.08
+                score -= track_index * 0.03
+                candidates.append((score, query_index, track))
+
+        candidates.sort(key=lambda item: item[0], reverse=True)
+
+        ranked: list[Playable] = []
+        used_artists: set[str] = set()
+        deferred: list[Playable] = []
+        for _, _, track in candidates:
+            artist = self._autoplay_artist(track)
+            if artist and artist in used_artists:
+                deferred.append(track)
+                continue
+            ranked.append(track)
+            if artist:
+                used_artists.add(artist)
+
+        ranked.extend(deferred)
+        return ranked
+
     async def _do_recommendation(
         self,
         *,
@@ -484,11 +551,12 @@ class Player(discord.VoiceProtocol):
 
         raw_results = await self._search_autoplay_queries_batched(queries, batch_size=4)
 
-        filtered_r: list[Playable] = []
-        for result in raw_results:
-            if isinstance(result, Exception):
-                continue
-            filtered_r.extend(result)
+        recent_for_ranking = self.queue.history[:-31:-1] + self.auto_queue.history[:-31:-1]
+        filtered_r = self._rank_autoplay_candidates(
+            raw_results,
+            recent_tracks=recent_for_ranking,
+            seed_tracks=ordered_seeds[:12],
+        )
 
         if not filtered_r and not self.auto_queue:
             logger.info('Player "%s" could not load any songs via AutoPlay.', self.guild.id)
@@ -505,8 +573,6 @@ class Player(discord.VoiceProtocol):
         current_identity = self._autoplay_identity(self._current) if self._current else None
 
         added: int = 0
-
-        random.shuffle(filtered_r)
         for track in filtered_r:
             identity = self._autoplay_identity(track)
             if current_encoded and track.encoded == current_encoded:
@@ -856,6 +922,14 @@ class Player(discord.VoiceProtocol):
             channel_id = str(self.channel.id)
 
         if not session_id or not token or not endpoint or not channel_id:
+            return
+
+        if self.node.status is not NodeStatus.CONNECTED or self.node.session_id is None:
+            logger.debug(
+                "Skipping VOICE_UPDATE for guild %s because %r has no active Lavalink session.",
+                self.guild.id,
+                self.node,
+            )
             return
 
         try:
